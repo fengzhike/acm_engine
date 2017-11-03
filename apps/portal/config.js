@@ -16,19 +16,19 @@ var _options = {
 		key: '2',
 		name: '流水账模板管理',
 		isExpand:true,
-		children: [{
+		children: [/*{
 			key: '201',
 			name: '模板编辑',
 			appName: 'acm-voucher'
-		}, {
+		}, */{
 			key: '202',
-			name: '模板列表',
-			appName: 'mk-app-complex-table'
-		}, {
-			key: '203',
 			name: '模板管理',
 			appName: 'mk-app-template'
-		}]
+		}/*, {
+			key: '203',
+			name: '模板列表',
+			appName: 'mk-app-complex-table'
+		}*/ ]
 	}/*, {
 		key: '309',
 		name: '开发工具',

@@ -26,7 +26,7 @@ function getTabs() {
 			children: [{
 				name: 'voucherTemplate',
 				component: 'AppLoader',
-				appName: "{{data.tabKey == '1' ? null : ''}}",
+				appName: "{{data.tabKey == '1' ? 'acm-voucher' : ''}}",
 				initData: "{{data.tabKey}}"
 			}]
 		}, {
