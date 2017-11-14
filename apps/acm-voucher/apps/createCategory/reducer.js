@@ -21,7 +21,7 @@ class reducer {
 		]
 		initState.data.classDataSource = classDataSource
         return this.metaReducer.init(state, initState)
-    }
+    } 
 
     modifyContent = (state) => {
         const content = this.metaReducer.gf(state, 'data.content')
