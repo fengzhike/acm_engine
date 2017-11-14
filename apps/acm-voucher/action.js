@@ -32,7 +32,7 @@ class action {
 
         injections.reduce('init')
         this.queryTree()
-        this.getAccountList()
+        this.getAccountList(18)
     }
     queryTree = async () => {
         let response = await this.webapi.businessTypeTemplate.init(),
@@ -87,7 +87,14 @@ class action {
 			this.injections.reduce('initTree', ret, treeType1)
 		}
     }
-	busNameSave = async() => {
+    // sql脚本导出
+    businessTypeTemplateBackup = async ()=>{
+        let ret = await this.webapi.businessTypeTemplate.businessTypeTemplateBackup()
+        if(ret){
+            this.metaAction.toast('success', ret)
+        }
+    }
+    busNameSave = async() => {
 		let selectInOrOutInfo = this.metaAction.gf('data.other.selectInOrOutInfo'),
 			treeType = this.metaAction.gf('data.businessTypeList') ? this.metaAction.gf('data.businessTypeList').toJS() : [],
 			treeType1 = this.metaAction.gf('data.businessTypeList') ? this.metaAction.gf('data.businessTypeList').toJS() : [],
@@ -213,7 +220,7 @@ class action {
     parseRuleList = (ruleList) => {
         // let res = []
         let res = ruleList.map(o=>{
-            o.direction = o.direction? '贷':'借'
+            o.direction = !o.direction? '借':'贷'
             // o.isSettlement = o.isSettlement? '结算方式':'本表'
             o.taxType = o.taxType? '一般计税':'简易计税'
             o.vatTaxpayer = o.vatTaxpayer == 41? '一般纳税人':'小规模纳税人'
@@ -229,7 +236,7 @@ class action {
     }
     handleStandardChange = (e)=>{
         this.metaAction.sf('data.standard', e.target.value)
-
+        this.getAccountList( e.target.value*1)
         // let ruleData = this.metaAction.gf('data.templateData').toJS().docTemplateList,
         //     ruleList = []
         // if(ruleData){
@@ -387,7 +394,7 @@ class action {
             this.injections.reduce('initTree', ret, treeType1, info.dragNode.props, info.node.props)
         }
     }
-	
+
 	hadleExpand = (expandedKeys, option) => {
 		let ifExpand = option.expanded
 		this.injections.reduce('setExpandedKeys', expandedKeys)
@@ -463,18 +470,53 @@ class action {
     }
 
     handleInfluenceChange = (columnKey,ps,dataSource)=>(val)=>{
+        debugger
+        if(columnKey === 'industryIdList'){
+            return this.injections.reduce('setRuleList',columnKey,ps,val)
+        }
         let selected = dataSource.filter(o=>{
             return o.id == val
         })[0]
 
         this.injections.reduce('setRuleList',columnKey,ps,val,selected)
     }
-    getAccountList =  async()=>{
+    getAccountList =  async(accountingStandardsId)=>{
         let val = await this.webapi.businessTypeTemplate.accountQuery({
-                    "isEndNode": true,
-                    "status": true
+                    accountingStandardsId,
+                    "industryIds":"1,2,3,4"
                 })
-        this.injections.reduce('setAccountSource',val)
+
+
+        this.injections.reduce('setAccountSource',this.formatAccountList(val) )
+    }
+    formatAccountList = (accountList)=>{
+        let account = [],temp = []
+
+        for(let attr in accountList){
+
+
+            temp = !account.length?
+                accountList[attr]:
+                accountList[attr].filter(o=>{
+                    let isRepeat = true
+                    for(let oo of account){
+                        if(o.code == oo.code){
+                            isRepeat = false
+                            break;
+                        }
+
+                    }
+                    return isRepeat
+                })
+            account = account.concat(temp)
+        }
+
+
+
+
+
+
+        return account
     }
     nameChange =(ps,columnKey)=>(e)=>{
         let standard = this.metaAction.gf('data.standard')
@@ -521,6 +563,9 @@ class action {
             option = this.metaAction.gf(`data.rule.other.dataSource${standard}.${columnKey}.${ps.rowIndex}`)
 
         var showValue = cellValue
+        if(columnKey == 'direction'){
+            debugger
+        }
 
         if(type == 'text'){
             showValue = cellValue
@@ -528,7 +573,10 @@ class action {
             option && (showValue = option.get('name'))
             if(columnKey == 'accountName' ){
                 let account = this.metaAction.gf(`data.rule.other.dataSource${standard}.account.${ps.rowIndex}`)
-                account && (showValue =account.get('value')+'-'+ account.get('name'))
+                account? (showValue =account.get('value')+'-'+ account.get('name')):
+                this.metaAction.gf(`data.rule.list${standard}.${ps.rowIndex}.accountCode`)+'-'+
+                this.metaAction.gf(`data.rule.list${standard}.${ps.rowIndex}.accountName`)
+
             }
             if(columnKey == 'accountCode' ){
                 let account = this.metaAction.gf(`data.rule.other.dataSource${standard}.account.${ps.rowIndex}`)
@@ -548,7 +596,23 @@ class action {
                     showValue = showValue? showValue.name:cellValue
                 }
             }
+            if(columnKey == 'industryIdList'){
+                let industryIdList = []
+                showValue && showValue.map(o=>{
+                    if(o == 1){
+                        industryIdList.push('工业')
+                    }else if (o == 2) {
+                        industryIdList.push('商贸')
+                    }else if (o == 3) {
+                        industryIdList.push('服务')
+                    }else if (o == 4){
+                        industryIdList.push('信息技术')
+                    }
+                })
+                showValue = industryIdList.join(',')
+            }
         }
+
 
         if (!this.isFocusCell(ps, columnKey,'rule')) {
             return (
@@ -606,6 +670,29 @@ class action {
                 }else if (true) {
 
                 }
+            }
+            if(columnKey == 'industryIdList'){
+                let value = []
+                if(cellValue && cellValue.size){
+                    value = cellValue.toJS().map(o=>{
+                        return o+''
+                    })
+                }
+                return (
+                    <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="多选模式"
+                        value = {value}
+                        onChange={::this.handleInfluenceChange(columnKey,ps)}>
+
+                        <Option key={'1'} >工业</Option>
+                        <Option key={'2'} >商贸</Option>
+                        <Option key={'3'} >服务</Option>
+                        <Option key={'4'} >信息技术</Option>
+
+                    </Select>
+                )
             }
             return (
                 <Select
@@ -694,14 +781,21 @@ class action {
     }
 
     handleDelete = async()=>{
-        let code = this.metaAction.gf('data.templateData.businessType.code')
+        const ret = await this.metaAction.modal('confirm', {
+			title: '警告',
+			content: '确定删除此业务类型?'
+		})
+        if(ret){
+            let code = this.metaAction.gf('data.templateData.businessType.code')
 
-        let response = await this.webapi.businessTypeTemplate.delete({code})
+            let response = await this.webapi.businessTypeTemplate.delete({code})
 
 
-        this.metaAction.toast('success','删除成功')
-        this.metaAction.sf('data.other.rightVisible',false)
-        this.queryTree()
+            this.metaAction.toast('success','删除成功')
+            this.metaAction.sf('data.other.rightVisible',false)
+            this.queryTree()
+        }
+
     }
     handleRefresh = ()=>{
         let code = this.metaAction.gf('data.templateData.businessType.code')
@@ -791,7 +885,7 @@ class action {
                                 idList:(oo.specialList && oo.specialList[oooIdx])? oo.specialList[oooIdx].idList:undefined
                             })
                         })
-                        specialList[0].isDefault = 1
+                        specialList[0] && (specialList[0].isDefault = 1)
                         oo.specialList = specialList
                     }
                     if(oo.columnsId == 16){
@@ -915,7 +1009,7 @@ class action {
                 }
 
 
-                item.industryIdList = o.industryIdList
+                item.industryIdList = o.industryIdList.map(o=>{return o*1})
                 item.idList = o.idList
 
                 return item
@@ -1076,6 +1170,7 @@ class action {
         if(!this.isBizCheck()) return
         this.injections.reduce('setInventoryProperty',val)
     }
+
 
     // 弹框 界面元数据
     addInvoiceType = async (data,rowIndex) => {

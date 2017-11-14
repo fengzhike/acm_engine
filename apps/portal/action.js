@@ -118,9 +118,16 @@ class action {
         switch (e.key) {
             case 'logout':
                 if (this.component.props.onRedirect && this.config.goAfterLogout) {
-                    await this.webapi.user.logout()
-                    this.metaAction.context.set('currentUser', undefined)
-                    this.component.props.onRedirect(this.config.goAfterLogout)
+                    let res = await this.webapi.user.logout()
+                    if(res){
+                        this.metaAction.context.set('currentUser', undefined)
+                        sessionStorage.removeItem('account')
+                        sessionStorage.removeItem('username')
+                        sessionStorage.removeItem('_accessToken')
+                        sessionStorage.removeItem('password')
+                        this.component.props.onRedirect(this.config.goAfterLogout)
+                    }
+
                 }
                 break;
             case 'github':

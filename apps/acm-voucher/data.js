@@ -23,6 +23,11 @@ export function getMeta() {
 					component:'Button',
 					children:'{{data.other.addOrDelBussiness}}',
 					onClick:'{{$addBusiness}}'
+				},{
+					name:'backup',
+					component:'Button',
+					children:'脚本导出',
+					onClick:'{{$businessTypeTemplateBackup}}'
 				}]
 
 			},{
@@ -1294,6 +1299,18 @@ function getRuleMeta(){
 					children: '对方科目来源'
 				},
 				cell: "{{$cellGetterRule('isSettlement')}}",
+			},{
+				name: 'industryIdList',
+				component: 'DataGrid.Column',
+				columnKey: 'stringExt3',
+				flexGrow: 1,
+				width: 280,
+				header: {
+					name: 'header',
+					component: 'DataGrid.Cell',
+					children: '支持行业'
+				},
+				cell: "{{$cellGetterRule('industryIdList')}}",
 			}]
 		}]
 	}]

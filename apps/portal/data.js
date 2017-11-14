@@ -52,7 +52,7 @@ export function getMeta() {
 							type: 'appstore-o'
 						},
 							"{{data.isTabsStyle ? '正常风格' : '多页签显示风格'}}"]
-					}, {
+					},/* {
 						name: 'gitter',
 						component: 'Menu.Item',
 						key: 'gitter',
@@ -70,7 +70,7 @@ export function getMeta() {
 							component: 'Icon',
 							type: 'github'
 						}, '源代码']
-					}, {
+					},*/ {
 						name: 'my',
 						component: 'Menu.SubMenu',
 						key: 'my',
@@ -83,7 +83,11 @@ export function getMeta() {
 								component: '::img',
 								className: 'mk-app-portal-header-right-photo',
 								src: '{{$getPhoto()}}'
-							}, "{{data.other.currentUser?data.other.currentUser.nickname:''}}"]
+							}, {
+								name:'nickname',
+								component:'::span',
+								children:"{{data.other.username||''}}"
+							}]
 						},
 						children: [ {
 							name: 'logout',

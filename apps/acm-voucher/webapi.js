@@ -10,7 +10,7 @@ export default {
     businessTypeTemplate: {
         init:()=> fetch.post('/v1/web/businessTypeTemplate/init',{}),
         query:(option)=> fetch.post('/v1/businessTypeTemplate/query',option),
-        accountQuery:(option) => fetch.post('/v1/account/query',option),
+        accountQuery:(option) => fetch.post('/v1/account/getPresetAccounts',option),
         update:(option)=> fetch.post('/v1/businessTypeTemplate/update',option),
         delete:(option)=> fetch.post('/v1/businessTypeTemplate/delete',option),
         create:(option)=> fetch.post('/v1/businessTypeTemplate/create',option),
@@ -19,6 +19,7 @@ export default {
         createCategory: (option) => fetch.post('/v1/businessType/createCategory', option),
         businessDelete: (option) => fetch.post('/v1/businessTypeTemplate/delete', option),
         updateCategory: (option) => fetch.post('/v1/businessType/updateCategory', option),
+        businessTypeTemplateBackup: (option) => fetch.post('/v1/businessTypeTemplate/backup', option),
     },
 
     tree: {
