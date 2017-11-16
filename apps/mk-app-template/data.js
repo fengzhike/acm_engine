@@ -103,7 +103,7 @@ function getTabs() {
 			children: [{
 				name: 'voucherTemplate',
 				component: 'AppLoader',
-				appName: "{{data.tabKey == '8' ? null : ''}}",
+				appName: "{{data.tabKey == '8' ? 'bussinessSearch' : ''}}",
 				initData: "{{data.tabKey}}"
 			}]
 		}]
